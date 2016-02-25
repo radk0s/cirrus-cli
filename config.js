@@ -1,46 +1,38 @@
 module.exports = {
     providers: {
         aws: {
-            accessKey: 'acckey',
-            secretKey: 'seckey',
+            accessKey: '',
+            secretKey: '',
             region: 'eu-central-1'
         },
         softlayer: {
-            user: 'usr',
-            apiKey: 'apikey'
+            user: '',
+            apiKey: ''
         },
-        vbox: {
-
+        digitalocean: {
+            apiToken: ''
         }
     },
-    machines: [
+    networkDiscovery: {
+        name: 'consul-server',
+        provider: 'softlayer'
+    },
+    swarmMaster: {
+        name: 'swarm-master',
+        provider: 'softlayer'
+    },
+    agents: [
         {
-            name: 'superb-docker-machine',
-            provider: 'aws',
-            instanceType: 't2.nano'
+            name: 'swarm-agent-01',
+            provider: 'softlayer'
         },
         {
-            name: 'superb-docker-machine-2',
-            provider: 'aws',
-            instanceType: 't2.micro'
-        }
-
-    ],
-    services: [
-        {
-            name: 'supervisor',
-            image: 'blostic/supervisor',
-            destinationMachine: 'superb-docker-machine'
+            name: 'swarm-agent-02',
+            provider: 'digitalocean'
         },
         {
-            name: 'slave1',
-            image: 'blostic/slave',
-            destinationMachine: 'superb-docker-machine-2'
-        },
-        {
-            name: 'slave2',
-            image: 'blostic/slave',
-            destinationMachine: 'superb-docker-machine-2'
+            name: 'swarm-agent-03',
+            provider: 'aws'
         }
     ]
 }

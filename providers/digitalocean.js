@@ -8,11 +8,8 @@ module.exports = function(config) {
         {
             create(machineName, additionalOptions) {
                 return dockerMachine('create', machineName, Object.assign({
-                        'driver': 'amazonec2',
-                        'amazonec2-access-key': config.accessKey,
-                        'amazonec2-secret-key': config.secretKey,
-                        'amazonec2-region': config.region || 'eu-central-1',
-                        'amazonec2-instance-type':  config.instanceType || 't2.micro'
+                        'driver': 'digitalocean',
+                        'digitalocean-access-token': config.apiToken
                     },
                     additionalOptions)
                 )

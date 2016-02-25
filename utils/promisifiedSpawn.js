@@ -3,9 +3,11 @@ require('colors');
 
 module.exports = function promisifiedSpawn(exec, args, options, customName) {
     return new Promise((resolve, reject) => {
+        var buffer = '';
         const process = spawn(exec, args, options);
 
         process.stdout.on('data', (data) => {
+            buffer = buffer.concat(data.toString());
             console.log(`${customName || exec}: `.green.bold + data.slice(0, -1).toString().white);
         });
 
@@ -15,7 +17,7 @@ module.exports = function promisifiedSpawn(exec, args, options, customName) {
 
         process.on('close', (code) => {
             if (code === 0) {
-                resolve(code)
+                resolve(buffer)
             } else {
                 reject(code)
             }
