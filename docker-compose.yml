@@ -7,21 +7,13 @@ services:
     ports:
       - 9090:9090
     environment:
-      - constraint:node==swarm-master
+      - constraint:node==swarm-agent-01
 
   piclient:
     image: blost/pi_client
     command: 'java -jar Pi_client.jar piserver'
     tty: true
     environment:
-      - constraint:node==swarm-agent-01
-    depends_on:
-      - piserver
-
-  memcached:
-    image: memcached
-    environment:
       - constraint:node==swarm-agent-02
     depends_on:
       - piserver
-

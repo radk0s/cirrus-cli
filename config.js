@@ -3,14 +3,17 @@ module.exports = {
         aws: {
             accessKey: '',
             secretKey: '',
-            region: 'eu-central-1'
+            region: 'eu-central-1',
+            publicNetworkInterface: 'eth0' //aws exposes only private interface, cant be mixed with other providers
         },
         softlayer: {
             user: '',
-            apiKey: ''
+            apiKey: '',
+            publicNetworkInterface: 'eth1'
         },
         digitalocean: {
-            apiToken: ''
+            apiToken: '',
+            publicNetworkInterface: 'eth0'
         }
     },
     networkDiscovery: {
@@ -29,10 +32,6 @@ module.exports = {
         {
             name: 'swarm-agent-02',
             provider: 'digitalocean'
-        },
-        {
-            name: 'swarm-agent-03',
-            provider: 'aws'
         }
     ]
 }

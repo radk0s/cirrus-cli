@@ -19,7 +19,8 @@ provider(config.networkDiscovery.provider)
             'swarm-master': '',
             'swarm': '',
             'swarm-discovery': `consul://${discoveryServiceIp.slice(0,-1)}:8500`,
-            'engine-opt': ['cluster-advertise=eth0:2376',`cluster-store=consul://${discoveryServiceIp.slice(0,-1)}:8500`]
+            'engine-opt': [`cluster-advertise=${config.providers[config.swarmMaster.provider].publicNetworkInterface}:2376`,
+                `cluster-store=consul://${discoveryServiceIp.slice(0,-1)}:8500`]
         })
     )
     .catch(errorCode => Promise.resolve()) //try process
@@ -30,15 +31,17 @@ provider(config.networkDiscovery.provider)
                 .create(machine.name, {
                     'swarm': '',
                     'swarm-discovery': `consul://${discoveryServiceIp.slice(0,-1)}:8500`,
-                    'engine-opt': ['cluster-advertise=eth0:2376',`cluster-store=consul://${discoveryServiceIp.slice(0,-1)}:8500`]
+                    'engine-opt': [`cluster-advertise=${config.providers[machine.provider].publicNetworkInterface}:2376`,
+                        `cluster-store=consul://${discoveryServiceIp.slice(0,-1)}:8500`]
                 })
         ))
     )
-    //create overlay network on swarm master
+    ////create overlay network on swarm master
+    .catch(errorCode => Promise.resolve()) //try process
     .then(() => dockerMachine('config', config.swarmMaster.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['network', 'create', '--driver', 'overlay', '--subnet', '12.0.9.0/24',
-        'nodewrapper_default'])))
+        'nodewrapper_default'])));
 
 
 
