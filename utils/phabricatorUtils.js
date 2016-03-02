@@ -5,7 +5,9 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.appendFile("./monitoring/prometheus.yml", ipCAdvisorList, function (err) {
                 if (err) {
-                    return console.log(err);
+                    reject(err);
+                } else {
+                    resolve();
                 }
             });
         });

@@ -12,9 +12,10 @@ provider(config.networkDiscovery.provider)
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['run', '-d', '-p', '8500:8500', '-h', 'consul',
             'progrium/consul', '-server', '-bootstrap'])))
+    .then(() => dockerMachine('config', config.networkDiscovery.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['run', '-d', '-p', '9093:9093',
-        "-v", "$PWD/monitoring:/alertmanager", 'prom/alertmanager', '-config=/alertmanager/alertmanager.conf'])))
+        "-v", "/monitoring:/alertmanager", 'prom/alertmanager', '-config=/alertmanager/alertmanager.conf'])))
     .catch(err => Promise.resolve()) //try process
     //create machine with swarm master
     .then(() => dockerMachine('ip', config.networkDiscovery.name))
@@ -52,21 +53,22 @@ provider(config.networkDiscovery.provider)
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['network', 'create', '--driver', 'overlay', '--subnet', '12.0.9.0/24',
         'nodewrapper_default'])))
+    .catch(() => Promise.resolve()) //try process
     .then(() => Promise.all(
         config.agents.map(machine =>
             dockerMachine('ip', machine.name)
-                .then(machineIp => '\'' + machineIp + ':1111' + '\' ' )
+                .then(machineIp => '\'' + machineIp.slice(0,-1) + ':1111' + '\' ' )
         )
     ))
     ////append phabricator config file
-    .then((cAdvistorIPs) => Promise.resolve(phabricatorUtils.customizePrometheusConfigFile( '[' + cAdvistorIPs + ']')))
+    .then((cAdvistorIPs) => phabricatorUtils.customizePrometheusConfigFile( '[' + cAdvistorIPs + ']'))
     //run prometheus
     .then(() => dockerMachine('config', config.networkDiscovery.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
-    .then(config =>
-        dockerMachine('ip', config.networkDiscovery.name)
-        .then(ip => docker(config.concat(['run', '-d', '-p', '1111:1111', '-v', '$PWD/monitoring:/etc/prometheus',
+    .then(dockerConf => dockerMachine('ip', config.networkDiscovery.name)
+        .then(ip => docker(dockerConf.concat(['run', '-d', '-p', '1111:1111', '-v', '/monitoring:/etc/prometheus',
             'prom/prometheus', '-config.file=/etc/prometheus/prometheus.yml',
-            '-alertmanager.url=http://' + ip +':9093']))
+            '-alertmanager.url=http://' + ip.slice(0,-1) +':9093']))
         )
-    );
+    )
+    .then(() => console.log("Configuration finished"));
