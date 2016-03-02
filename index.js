@@ -51,14 +51,21 @@ provider(config.networkDiscovery.provider)
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['network', 'create', '--driver', 'overlay', '--subnet', '12.0.9.0/24',
         'nodewrapper_default'])))
-    //append phabricator config file
-    .then( () => Promise.resolve(
-        Promise.resolve(config.agents.map(machine => '\'' + dockerMachine('ip', machine.name) + ':1111' + '\' ' ))
-        .then((cAdvistorIPs) => Promise.resolve(phabricatorUtils.customizePrometheusConfigFile( '[' + cAdvistorIPs + ']'))
-    )))
+    .then(() => Promise.all(
+        config.agents.map(machine =>
+            dockerMachine('ip', machine.name)
+                .then(machineIp => '\'' + machineIp + ':1111' + '\' ' )
+        )
+    ))
+    ////append phabricator config file
+    .then((cAdvistorIPs) => Promise.resolve(phabricatorUtils.customizePrometheusConfigFile( '[' + cAdvistorIPs + ']')))
     //run prometheus
     .then(() => dockerMachine('config', config.networkDiscovery.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
-    .then((config) => docker(config.concat(['run', '-d', '-p', '1111:1111', '-v', '$PWD/monitoring:/etc/prometheus',
-        'prom/prometheus', '-config.file=/etc/prometheus/prometheus.yml',
-        '-alertmanager.url=http://' + dockerMachine('ip', config.networkDiscovery.name) +':9093'])));
+    .then(config =>
+        dockerMachine('ip', config.networkDiscovery.name)
+        .then(ip => docker(config.concat(['run', '-d', '-p', '1111:1111', '-v', '$PWD/monitoring:/etc/prometheus',
+            'prom/prometheus', '-config.file=/etc/prometheus/prometheus.yml',
+            '-alertmanager.url=http://' + ip +':9093']))
+        )
+    );
