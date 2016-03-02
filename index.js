@@ -12,6 +12,7 @@ provider(config.networkDiscovery.provider)
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['run', '-d', '-p', '8500:8500', '-h', 'consul',
             'progrium/consul', '-server', '-bootstrap'])))
+    .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['run', '-d', '-p', '9093:9093',
         "-v", "$PWD/monitoring:/alertmanager", 'prom/alertmanager', '-config=/alertmanager/alertmanager.conf'])))
     .catch(err => Promise.resolve()) //try process
