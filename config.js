@@ -18,16 +18,27 @@ module.exports = {
     },
     networkDiscovery: {
         name: 'consul-server',
-        provider: 'softlayer'
+        provider: 'digitalocean'
+    },
+    monitoring : {
+        alertManager : {
+            name: 'alert-manager',
+            provider: 'digitalocean'
+        },
+        prometheus: {
+            name : 'prometheus',
+            provider: 'digitalocean'
+        }
+
     },
     swarmMaster: {
         name: 'swarm-master',
-        provider: 'softlayer'
+        provider: 'digitalocean'
     },
     agents: [
         {
             name: 'swarm-agent-01',
-            provider: 'softlayer'
+            provider: 'digitalocean'
         },
         {
             name: 'swarm-agent-02',

@@ -30,6 +30,6 @@ module.exports = function() {
 
         showInfo(machineName) {
             return dockerMachine('inspect', machineName, {})
-        },
+        }
     }
-}
+};
