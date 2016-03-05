@@ -16,20 +16,9 @@ module.exports = {
             publicNetworkInterface: 'eth0'
         }
     },
-    networkDiscovery: {
-        name: 'consul-server',
+    manager: {
+        name: 'manager',
         provider: 'digitalocean'
-    },
-    monitoring : {
-        alertManager : {
-            name: 'alert-manager',
-            provider: 'digitalocean'
-        },
-        prometheus: {
-            name : 'prometheus',
-            provider: 'digitalocean'
-        }
-
     },
     swarmMaster: {
         name: 'swarm-master',

@@ -21,6 +21,4 @@ scrape_configs:
     scrape_timeout: 10s
 
     target_groups:
-      - targets:
-        - '104.131.95.252:1111'
-        - '104.131.87.159:1111'
+      - targets: ['104.131.61.142:1111','104.131.34.6:1111']
