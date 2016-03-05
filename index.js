@@ -2,6 +2,7 @@ const config = require('./config');
 const provider = require('./Provider')(config.providers);
 const docker = require('./programs/docker');
 const dockerMachine = require('./programs/dockerMachine');
+const dockerMachineRaw = require('./programs/dockerMachineRaw');
 const phabricatorUtils = require('./utils/phabricatorUtils');
 
 provider(config.networkDiscovery.provider)
@@ -12,10 +13,11 @@ provider(config.networkDiscovery.provider)
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['run', '-d', '-p', '8500:8500', '-h', 'consul',
             'progrium/consul', '-server', '-bootstrap'])))
+    .then(() => dockerMachineRaw(['scp', '-r', './monitoring', `${config.networkDiscovery.name}:/`]))
     .then(() => dockerMachine('config', config.networkDiscovery.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then((config) => docker(config.concat(['run', '-d', '-p', '9093:9093',
-        "-v", "/monitoring:/alertmanager", 'prom/alertmanager', '-config=/alertmanager/alertmanager.conf'])))
+        "-v", "/monitoring:/alertmanager", 'prom/alertmanager', '-config.file=/alertmanager/alertmanager.conf'])))
     .catch(err => Promise.resolve()) //try process
     //create machine with swarm master
     .then(() => dockerMachine('ip', config.networkDiscovery.name))
@@ -37,14 +39,14 @@ provider(config.networkDiscovery.provider)
                     'swarm': '',
                     'swarm-discovery': `consul://${discoveryServiceIp.slice(0,-1)}:8500`,
                     'engine-opt': [`cluster-advertise=${config.providers[machine.provider].publicNetworkInterface}:2376`,
-                        `cluster-store=consul://${discoveryServiceIp.slice(0,-1)}:8500`]
+                        `cluster-store=consul://${discoveryServiceIp.slice(0,- 1)}:8500`]
                 })
                 //run monitoring cAdvisor on each node
                 .then(() => dockerMachine('config', machine.name))
                 .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
-                .then((config) => docker(config.concat(['run', '-d', '-p', '1111:1111',
+                .then((config) => docker(config.concat(['run', '--name=cadvisor' + machine.name, '-d', '-p', '1111:1111',
                     "-v", "/var/run:/var/run:rw", "-v", "/sys:/sys:ro", "-v", "/var/lib/docker/:/var/lib/docker:ro",
-                    'google/cadvisor:latest', '--name=cadvisor_' + machine.name])))
+                    'google/cadvisor:latest', '-port=1111'])))
         ))
     )
     ////create overlay network on swarm master
@@ -57,12 +59,13 @@ provider(config.networkDiscovery.provider)
     .then(() => Promise.all(
         config.agents.map(machine =>
             dockerMachine('ip', machine.name)
-                .then(machineIp => '\'' + machineIp.slice(0,-1) + ':1111' + '\' ' )
+                .then(machineIp => machineIp.slice(0,-1) + ':1111' + ' ' )
         )
     ))
     ////append phabricator config file
     .then((cAdvistorIPs) => phabricatorUtils.customizePrometheusConfigFile( '[' + cAdvistorIPs + ']'))
     //run prometheus
+    .then(() => dockerMachineRaw(['scp', '-r', './monitoring', `${config.networkDiscovery.name}:/`]))
     .then(() => dockerMachine('config', config.networkDiscovery.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
     .then(dockerConf => dockerMachine('ip', config.networkDiscovery.name)

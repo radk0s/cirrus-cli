@@ -22,5 +22,3 @@ scrape_configs:
 
     target_groups:
       - targets:
-        - '104.131.95.252:1111'
-        - '104.131.87.159:1111'
