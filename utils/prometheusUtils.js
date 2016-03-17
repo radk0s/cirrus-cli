@@ -1,16 +1,29 @@
 const fs = require('fs');
 
+function readFile(filename, enc){
+    return new Promise(function (resolve, reject){
+        fs.readFile(filename, enc, function (err, res){
+            if (err) reject(err);
+            else resolve(res);
+        });
+    });
+}
+
+function writeFile(filename, data){
+    return new Promise(function (resolve, reject){
+        fs.writeFile(filename, data, function (err) {
+            if (err) return reject();
+            return resolve("Saved");
+        });
+    });
+}
+
 module.exports = {
     customizePrometheusConfigFile: function (ipCAdvisorList) {
-        return new Promise((resolve, reject) => {
-            fs.readFile("./monitoring/prometheus.yml.dist", 'utf8', (err, data) => {
-                if (err) return console.log(err);
-                fs.writeFile('./monitoring/prometheus.yml', data + ipCAdvisorList, function (err) {
-                    if (err) return console.log(err);
-                    console.log('saved');
-                    resolve();
-                });
-            });
+        return new Promise(function (resolve, reject){
+            readFile("./monitoring/prometheus.yml.dist", 'utf8')
+                .then((res) => writeFile("./monitoring/prometheus.yml", res + ipCAdvisorList))
+                .then( () =>  resolve());
         });
     }
 };

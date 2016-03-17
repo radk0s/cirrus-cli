@@ -58,15 +58,14 @@ provider(config.manager.provider)
     .catch(() => Promise.resolve()) //try process
     .then(() => Promise.all(
         config.agents.map(machine =>
-            dockerMachine('ip', machine.name).then(machineIp => '\'' + machineIp.slice(0,-1) + ':1111' + '\'')
+            dockerMachine('ip', machine.name)
+                .then(machineIp => '\'' + machineIp.slice(0,-1) + ':1111' + '\'')
         )
     ))
-    .catch(() => Promise.resolve()) //try process
     ////append prometheus config file
     .then((cAdvistorIPs) => prometheusUtils.customizePrometheusConfigFile( ' [' + cAdvistorIPs + ']'))
-    .catch(() => Promise.resolve()) //try process
 //    //run prometheus
-    .then(() => dockerMachineRaw(['scp', '-r', './monitoring', `${config.manager.name}:/monitoring`]))
+    .then((t) => {console.log(t); dockerMachineRaw(['scp', '-r', './monitoring', `${config.manager.name}:/monitoring`])})
     //.catch(() => Promise.resolve()) //try process
     .then(() => dockerMachine('config', config.manager.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))
