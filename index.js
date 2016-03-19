@@ -65,7 +65,7 @@ provider(config.manager.provider)
     ////append prometheus config file
     .then((cAdvistorIPs) => prometheusUtils.customizePrometheusConfigFile( ' [' + cAdvistorIPs + ']'))
 //    //run prometheus
-    .then((t) => {console.log(t); dockerMachineRaw(['scp', '-r', './monitoring', `${config.manager.name}:/monitoring`])})
+    .then(() => {dockerMachineRaw(['scp', '-r', './monitoring', `${config.manager.name}:/`])})
     //.catch(() => Promise.resolve()) //try process
     .then(() => dockerMachine('config', config.manager.name))
     .then(rawConfiguration => Promise.resolve(rawConfiguration.slice(0,-1).split('\n')))

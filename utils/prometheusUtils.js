@@ -20,10 +20,7 @@ function writeFile(filename, data){
 
 module.exports = {
     customizePrometheusConfigFile: function (ipCAdvisorList) {
-        return new Promise(function (resolve, reject){
-            readFile("./monitoring/prometheus.yml.dist", 'utf8')
-                .then((res) => writeFile("./monitoring/prometheus.yml", res + ipCAdvisorList))
-                .then( () =>  resolve());
-        });
+        return readFile("./monitoring/prometheus.yml.dist", 'utf8')
+            .then((res) => writeFile("./monitoring/prometheus.yml", res + ipCAdvisorList))
     }
 };
